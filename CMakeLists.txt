@@ -11,9 +11,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(FindPkgConfig)
 pkg_check_modules(MIRAL miral REQUIRED)
 
-add_executable(compositor
-    src/main.cpp
-)
+file(GLOB SOURCES "src/*.cpp")
+
+add_executable(compositor ${SOURCES})
 
 target_include_directories(compositor
     PUBLIC SYSTEM
