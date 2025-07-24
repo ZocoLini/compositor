@@ -6,11 +6,14 @@
 #include "miral/minimal_window_manager.h"
 #include "miral/window.h"
 #include "miral/window_management_policy.h"
+#include "miral/window_manager_tools.h"
 #include "miral/window_specification.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
+#include <memory>
 #include <sys/stat.h>
 #include <tuple>
 #include <vector>
@@ -63,6 +66,7 @@ mir::geometry::Size size_for(int index, int total, int width, int height)
 TiledWindowManager::TiledWindowManager(const WindowManagerTools& tools)
     : MinimalWindowManager(tools)
 {
+    workspaces.push_back(this->tools.create_workspace());
 }
 
 miral::WindowSpecification TiledWindowManager::place_new_window(
@@ -74,11 +78,6 @@ miral::WindowSpecification TiledWindowManager::place_new_window(
     auto *windows = &app_info.windows();
     size_t n_windows = windows->size();
 
-    if (n_windows == kMaxWindows)
-    {
-        throw std::runtime_error("Cannot place more than 4 windows");
-    }
-
     int width = tools.active_output().size.width.as_value();
     int height = tools.active_output().size.height.as_value();
 
@@ -88,8 +87,46 @@ miral::WindowSpecification TiledWindowManager::place_new_window(
     
     spec.top_left() = position_for(n_windows, width, height);
     spec.size() = size_for(n_windows, n_windows + 1, width, height);
-
+    
     return spec;
+}
+
+void TiledWindowManager::advise_new_window(WindowInfo const& window_info)
+{
+    auto current_workspace = this->workspaces.at(this->current_workspace_index);
+    int windows_count = 0;
+
+    tools.for_each_window_in_workspace(current_workspace, [&](const Window &window) {
+        ++windows_count;
+    });
+    
+    if (windows_count >= kMaxWindows) {
+        auto new_workspace = tools.create_workspace();
+        tools.add_tree_to_workspace(window_info.window(), new_workspace);
+        this->workspaces.push_back(new_workspace);
+        this->current_workspace_index = workspaces.size() - 1;
+        current_workspace = new_workspace;
+    }
+    
+    tools.add_tree_to_workspace(window_info.window(), current_workspace);
+    
+    MinimalWindowManager::advise_new_window(window_info);
+}
+
+void TiledWindowManager::advise_adding_to_workspace(
+    std::shared_ptr<Workspace> const& workspace,
+    std::vector<Window> const& windows)
+{
+    std::cout << "Adding windows to workspace" << std::endl;
+    std::cout << "Workspace ID: " << workspace.get() << std::endl;
+}
+
+void TiledWindowManager::advise_removing_from_workspace(
+    std::shared_ptr<Workspace> const& workspace,
+    std::vector<Window> const& windows)
+{
+    std::cout << "Removing windows from workspace" << std::endl;
+    std::cout << "Workspace ID: " << workspace.get() << std::endl;
 }
 
 void TiledWindowManager::handle_request_resize(miral::WindowInfo& window_info,
@@ -127,10 +164,10 @@ void TiledWindowManager::advise_delete_window(WindowInfo const& window_info)
     miral::ApplicationInfo app_info = tools.info_for(app);
 
     std::vector<miral::Window> ignorable_windows = {window_info.window()};
-    positionate_windows(app_info, ignorable_windows);
+    update_windows(app_info, ignorable_windows);
 }
 
-void TiledWindowManager::positionate_windows(
+void TiledWindowManager::update_windows(
     miral::ApplicationInfo const& app_info,
     std::vector<miral::Window> ignorable_windows)
 {
@@ -138,6 +175,7 @@ void TiledWindowManager::positionate_windows(
     int width = tools.active_output().size.width.as_value();
     int height = tools.active_output().size.height.as_value();
 
+    tools.windo
     std::vector<miral::Window>* windows = &app_info.windows();
     
     int real_index = 0;

@@ -18,12 +18,23 @@ class TiledWindowManager : public miral::MinimalWindowManager
                                MirInputEvent const* input_event,
                                MirResizeEdge edge) override;
     
+    void advise_new_window(WindowInfo const& window_info) override;
+    void advise_adding_to_workspace(
+        std::shared_ptr<Workspace> const& workspace,
+        std::vector<Window> const& windows) override;
+    void advise_removing_from_workspace(
+        std::shared_ptr<Workspace> const& workspace,
+        std::vector<Window> const& windows) override;
     void handle_request_move(WindowInfo& window_info, MirInputEvent const* input_event) override;
     void advise_delete_window(WindowInfo const& app_info) override;
     void handle_modify_window(WindowInfo& window_info, WindowSpecification const& modifications) override;
     
     private:
-        void positionate_windows(miral::ApplicationInfo const& window_info, std::vector<miral::Window> deleted_windows);
+        void update_windows(miral::ApplicationInfo const& window_info, std::vector<miral::Window> deleted_windows);
+        
+    protected:
+        std::vector<std::shared_ptr<Workspace>> workspaces;
+        size_t current_workspace_index = 0;
 };
 
 #endif // FIBONACCI_WINDOW_MANAGER_H
