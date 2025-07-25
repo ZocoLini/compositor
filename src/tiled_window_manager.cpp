@@ -149,7 +149,9 @@ void TiledWindowManager::handle_request_move(WindowInfo& window_info,
 void TiledWindowManager::handle_modify_window(
     WindowInfo& window_info, WindowSpecification const& modifications)
 {
-    if (modifications.state() == MirWindowState::mir_window_state_maximized)
+    if (modifications.state() == MirWindowState::mir_window_state_maximized ||
+        modifications.state() == MirWindowState::mir_window_state_minimized ||
+        modifications.state() == MirWindowState::mir_window_state_restored)
     {
         return;
     }
@@ -185,7 +187,7 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
         update_windows({});
         return true;
     }
-    
+
     auto current_workspace = this->workspaces.at(this->current_workspace_index);
     auto active_window = tools.active_window();
     std::shared_ptr<miral::Workspace> new_workspace;
@@ -214,16 +216,17 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
             return true;
         case XKB_KEY_m:
         case XKB_KEY_M:
-            if (count_windows_in_workspace(current_workspace) == 1) return false;
-        
+            if (count_windows_in_workspace(current_workspace) == 1)
+                return false;
+
             tools.remove_tree_from_workspace(active_window, current_workspace);
-            
+
             new_workspace = tools.create_workspace();
             this->workspaces.push_back(new_workspace);
             this->current_workspace_index = this->workspaces.size() - 1;
-            
+
             tools.add_tree_to_workspace(active_window, new_workspace);
-            
+
             return true;
         case XKB_KEY_q:
         case XKB_KEY_e:
