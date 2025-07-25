@@ -13,4 +13,4 @@ if ! (
     exit 1
 fi
 
-WAYLAND_DISPLAY=wayland-99 cmake-build/compositor --startup-app xfce4-terminal
+WAYLAND_DISPLAY=wayland-99 cmake-build/compositor --startup-app xfce4-terminal --x11-output 1920x1080

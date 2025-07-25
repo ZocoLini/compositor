@@ -86,8 +86,6 @@ miral::WindowSpecification TiledWindowManager::place_new_window(
 {
     miral::WindowSpecification spec = requested_specification;
 
-    spec.state() = MirWindowState::mir_window_state_maximized;
-
     return spec;
 }
 
@@ -114,7 +112,6 @@ void TiledWindowManager::advise_adding_to_workspace(
     std::vector<Window> const& windows)
 {
     std::cout << "Adding windows to workspace" << std::endl;
-    std::cout << "Workspace ID: " << workspace.get() << std::endl;
     std::cout << "Added windows count: " << windows.size() << std::endl;
     std::cout << "Windows count: " << count_windows_in_workspace(workspace)
               << std::endl;
@@ -127,7 +124,6 @@ void TiledWindowManager::advise_removing_from_workspace(
     std::vector<Window> const& windows)
 {
     std::cout << "Removing windows from workspace" << std::endl;
-    std::cout << "Workspace ID: " << workspace.get() << std::endl;
     std::cout << "Deleted windows count: " << windows.size() << std::endl;
     std::cout << "Windows count: " << count_windows_in_workspace(workspace)
               << std::endl;
@@ -310,7 +306,7 @@ void TiledWindowManager::hide_window(miral::Window const& window)
 void TiledWindowManager::show_window(miral::Window const& window)
 {
     miral::WindowSpecification spec;
-    spec.state() = MirWindowState::mir_window_state_maximized;
+    spec.state() = MirWindowState::mir_window_state_restored;
 
     tools.modify_window(window, spec);
 };

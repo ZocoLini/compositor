@@ -3,6 +3,7 @@
 #include <miral/configuration_option.h>
 #include <miral/external_client.h>
 #include <miral/runner.h>
+#include <miral/canonical_window_manager.h>
 #include <miral/set_window_management_policy.h>
 #include <miral/toolkit_event.h>
 #include <string>
@@ -17,7 +18,7 @@ int main(int argc, char const* argv[])
     
     std::string terminal_cmd{"xfce4-terminal"};
     miral::ExternalClientLauncher launcher;
-
+    
     auto const open_terminal_keybinds = [&](MirEvent const* event)
     {
         // Skip non-input events
