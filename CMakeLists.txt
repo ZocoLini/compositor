@@ -10,6 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FindPkgConfig)
 pkg_check_modules(MIRAL miral REQUIRED)
+pkg_check_modules(XKBCOMMON xkbcommon REQUIRED)
 
 file(GLOB SOURCES "src/*.cpp")
 
@@ -23,6 +24,7 @@ target_include_directories(compositor
 
 target_link_libraries(compositor
     ${MIRAL_LDFLAGS}
+    ${XKBCOMMON_LIBRARIES}
 )
 
 enable_testing()

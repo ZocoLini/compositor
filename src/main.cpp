@@ -1,9 +1,10 @@
+#include "miral/display_configuration.h"
 #include "tiled_window_manager.h"
 #include <miral/append_event_filter.h>
+#include <miral/canonical_window_manager.h>
 #include <miral/configuration_option.h>
 #include <miral/external_client.h>
 #include <miral/runner.h>
-#include <miral/canonical_window_manager.h>
 #include <miral/set_window_management_policy.h>
 #include <miral/toolkit_event.h>
 #include <string>
@@ -15,10 +16,10 @@ using namespace miral::toolkit;
 int main(int argc, char const* argv[])
 {
     MirRunner runner{argc, argv};
-    
+
     std::string terminal_cmd{"xfce4-terminal"};
     miral::ExternalClientLauncher launcher;
-    
+
     auto const open_terminal_keybinds = [&](MirEvent const* event)
     {
         // Skip non-input events
@@ -64,12 +65,12 @@ int main(int argc, char const* argv[])
         }
     };
 
-    return runner.run_with(
-    {
-        set_window_management_policy<TiledWindowManager>(), launcher,
-         miral::ConfigurationOption{
-             run_startup_apps, "startup-app",
-             "App to run at startup (can be specified multiple times)"},
-         miral::AppendEventFilter{open_terminal_keybinds}
+    return runner.run_with({
+        set_window_management_policy<TiledWindowManager>(),
+        launcher,
+        miral::ConfigurationOption{
+            run_startup_apps, "startup-app",
+            "App to run at startup (can be specified multiple times)"},
+        miral::AppendEventFilter{open_terminal_keybinds},
     });
 }

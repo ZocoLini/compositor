@@ -24,7 +24,7 @@ const int kSizeCombinations = 4 * 3 * 2 * 1; // kMaxWindows!
 
 mir::geometry::Point position_for(int index, int width, int height)
 {
-    static std::tuple<float, float> positions[4] = {
+    static std::tuple<float, float> positions[kMaxWindows] = {
         std::tuple<float, float>{0.0f, 0.0f},
         std::tuple<float, float>{0.5f, 0.0f},
         std::tuple<float, float>{0.5f, 0.5f},
@@ -40,16 +40,19 @@ mir::geometry::Point position_for(int index, int width, int height)
 mir::geometry::Size size_for(int index, int total, int width, int height)
 {
     static std::tuple<float, float> sizes[kSizeCombinations] = {
-        std::tuple<float, float>{1.0f, 1.0f}, // 1 window
-        std::tuple<float, float>{0.5f, 1.0f}, // 2 windows
-        std::tuple<float, float>{0.5f, 1.0f},
-        std::tuple<float, float>{0.5f, 1.0f}, // 3 windows
-        std::tuple<float, float>{0.5f, 0.5f},
-        std::tuple<float, float>{0.5f, 0.5f},
-        std::tuple<float, float>{0.5f, 0.5f}, // 4 windows
-        std::tuple<float, float>{0.5f, 0.5f},
-        std::tuple<float, float>{0.5f, 0.5f},
-        std::tuple<float, float>{0.5f, 0.5f},
+        std::tuple<float, float>{1.0f, 1.0f}, // 1 window  - Window 0 
+        
+        std::tuple<float, float>{0.5f, 1.0f}, // 2 windows - Window 0
+        std::tuple<float, float>{0.5f, 1.0f}, // 2 windows - Window 1
+        
+        std::tuple<float, float>{0.5f, 1.0f}, // 3 windows - Window 0
+        std::tuple<float, float>{0.5f, 0.5f}, // 3 windows - Window 1
+        std::tuple<float, float>{0.5f, 0.5f}, // 3 windows - Window 2
+        
+        std::tuple<float, float>{0.5f, 0.5f}, // 4 windows - Window 0
+        std::tuple<float, float>{0.5f, 0.5f}, // 4 windows - Window 1
+        std::tuple<float, float>{0.5f, 0.5f}, // 4 windows - Window 2
+        std::tuple<float, float>{0.5f, 0.5f}, // 4 windows - Window 3
     };
 
     static int8_t start_index[kMaxWindows] = {0, 1, 3, 6};
