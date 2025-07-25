@@ -89,7 +89,6 @@ void TiledWindowManager::advise_new_window(WindowInfo const& window_info)
     if (windows_count >= kMaxWindows)
     {
         auto new_workspace = tools.create_workspace();
-        tools.add_tree_to_workspace(window_info.window(), new_workspace);
         this->workspaces.push_back(new_workspace);
         this->current_workspace_index = workspaces.size() - 1;
         current_workspace = new_workspace;
