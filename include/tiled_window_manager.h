@@ -29,9 +29,10 @@ class TiledWindowManager : public miral::MinimalWindowManager
     void handle_request_move(WindowInfo& window_info, MirInputEvent const* input_event) override;
     void advise_delete_window(WindowInfo const& app_info) override;
     void handle_modify_window(WindowInfo& window_info, WindowSpecification const& modifications) override;
+    bool handle_keyboard_event(MirKeyboardEvent const* event) override;
     
     private:
-        void update_windows();
+        void update_windows(std::vector<Window> const& ignorable_windows);
         int count_windows_in_workspace(std::shared_ptr<miral::Workspace> workspace);
         
     protected:
