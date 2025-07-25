@@ -212,6 +212,8 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
             {
                 --this->current_workspace_index;
             }
+            
+            update_windows({});
 
             return true;
         case XKB_KEY_m:
