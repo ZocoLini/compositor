@@ -9,6 +9,7 @@ class TiledWindowManager : public miral::MinimalWindowManager
 {
   public:
     explicit TiledWindowManager(const WindowManagerTools& tools);
+    ~TiledWindowManager();
 
     miral::WindowSpecification place_new_window(
         miral::ApplicationInfo const& app_info,
@@ -30,7 +31,8 @@ class TiledWindowManager : public miral::MinimalWindowManager
     void handle_modify_window(WindowInfo& window_info, WindowSpecification const& modifications) override;
     
     private:
-        void update_windows(miral::ApplicationInfo const& window_info, std::vector<miral::Window> deleted_windows);
+        void update_windows();
+        int count_windows_in_workspace(std::shared_ptr<miral::Workspace> workspace);
         
     protected:
         std::vector<std::shared_ptr<Workspace>> workspaces;
