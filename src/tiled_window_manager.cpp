@@ -40,15 +40,15 @@ mir::geometry::Point position_for(int index, int width, int height)
 mir::geometry::Size size_for(int index, int total, int width, int height)
 {
     static std::tuple<float, float> sizes[kSizeCombinations] = {
-        std::tuple<float, float>{1.0f, 1.0f}, // 1 window  - Window 0 
-        
+        std::tuple<float, float>{1.0f, 1.0f}, // 1 window  - Window 0
+
         std::tuple<float, float>{0.5f, 1.0f}, // 2 windows - Window 0
         std::tuple<float, float>{0.5f, 1.0f}, // 2 windows - Window 1
-        
+
         std::tuple<float, float>{0.5f, 1.0f}, // 3 windows - Window 0
         std::tuple<float, float>{0.5f, 0.5f}, // 3 windows - Window 1
         std::tuple<float, float>{0.5f, 0.5f}, // 3 windows - Window 2
-        
+
         std::tuple<float, float>{0.5f, 0.5f}, // 4 windows - Window 0
         std::tuple<float, float>{0.5f, 0.5f}, // 4 windows - Window 1
         std::tuple<float, float>{0.5f, 0.5f}, // 4 windows - Window 2
@@ -211,15 +211,42 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
             {
                 --this->current_workspace_index;
             }
-            
+
             update_windows({});
 
             return true;
+        case XKB_KEY_Tab:
+        {
+            std::vector<miral::Window> windows =
+                get_workspace_windows(current_workspace);
+            
+            int active_window_index = -1;
+            for (size_t i = 0; i < windows.size(); ++i)
+            {
+                if (windows[i] == active_window)
+                {
+                    active_window_index = i;
+                    break;
+                }
+            }
+            
+            ++active_window_index;
+            
+            if (active_window_index == windows.size())
+            {
+                active_window_index = 0;
+            }
+            
+            miral::Window next_window = windows[active_window_index];
+            
+            tools.select_active_window(next_window);
+            
+            return true;
+        }
         case XKB_KEY_m:
         case XKB_KEY_M:
             if (count_windows_in_workspace(current_workspace) == 1)
                 return false;
-
             tools.remove_tree_from_workspace(active_window, current_workspace);
 
             new_workspace = tools.create_workspace();
@@ -321,4 +348,15 @@ int TiledWindowManager::count_windows_in_workspace(
     tools.for_each_window_in_workspace(workspace,
                                        [&](const Window& window) { ++count; });
     return count;
+}
+
+std::vector<miral::Window> TiledWindowManager::get_workspace_windows(
+    std::shared_ptr<miral::Workspace> workspace)
+{
+    int windows_count = count_windows_in_workspace(workspace);
+    std::vector<miral::Window> windows;
+    windows.reserve(windows_count);
+    tools.for_each_window_in_workspace(workspace, [&](const Window& window)
+                                       { windows.push_back(window); });
+    return windows;
 }

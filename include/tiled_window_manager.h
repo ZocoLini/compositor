@@ -41,6 +41,7 @@ class TiledWindowManager : public miral::MinimalWindowManager
     void update_windows(std::vector<Window> const& ignorable_windows);
     void hide_window(miral::Window const& window);
     void show_window(miral::Window const& window);
+    std::vector<miral::Window> get_workspace_windows(std::shared_ptr<miral::Workspace> workspace);
     int count_windows_in_workspace(std::shared_ptr<miral::Workspace> workspace);
 
   protected:
