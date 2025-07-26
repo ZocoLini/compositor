@@ -129,3 +129,47 @@ what I wanted to implement, logic to interact with the workspaces using keybinds
 - Ctrl + Alt + M: Move the active window to a new workspace
 - Ctrl + Alt + V: Close all windows in the actual workspace, remove it, and move to the previous one
 - Ctrl + Alt + Tab: Switch the focus between windows in the current workspace
+
+## Testing
+
+As the last step, while testing creating windows and moving them between workspaces, I noticed that, when moving to a 
+workspace where there is a gnome-calculator window, the focus was being moved to a window in the previous workspace, which was not the expected behavior. 
+
+My first thought was to change the focus to the first window when the method 'update_windows' was called but it did not work as 
+expected. The compositor started crashing on startup. The error was the following:
+
+```bash
+Mir fatal error: advise_focus_gained: window was not found in the list!!!
+```
+
+Decided to override the method 'advise_focus_gained' and it started working as expected. To see what was going on, I decided to read the 
+source code and understand what was MinimalWindowManager doing. At this point, I started thinking that using MinimalWindowManager instead 
+of WindowManagerPolicy wasn't the best approach, but, at the same time, I wanted the functionality already implemented in MinimalWindowManager.
+
+Diving into the source code, I found that 'ApplicationSelector::advise_focus_gained' was raising a fatal error because, the window I was 
+trying to focus was not found in a list called 'focus_list'. Elements were being added to the list when
+'ApplicationSelector::advise_new_window' was being called. MinimalWindowManager calls 'ApplicationSelector::advise_new_window' when 
+'MinimalWindowManager::advise_new_window' gets called so maybe I wasn't calling 'MinimalWindowManager::advise_new_window' after
+overriding the method. Went to my code and found that I was calling it but after the focus request.
+
+```cpp
+void TiledWindowManager::advise_new_window(WindowInfo const& window_info)
+{
+    auto current_workspace = this->workspaces.at(this->current_workspace_index);
+    int windows_count = count_windows_in_workspace(current_workspace);
+
+    if (windows_count >= kMaxWindows)
+    {
+        auto new_workspace = tools.create_workspace();
+        this->workspaces.push_back(new_workspace);
+        this->current_workspace_index = workspaces.size() - 1;
+        current_workspace = new_workspace;
+    }
+
+    tools.add_tree_to_workspace(window_info.window(), current_workspace); // This triggers update_windows trying to give focus to the first window in the workspace
+
+    MinimalWindowManager::advise_new_window(window_info); // This adds the window to the focus list
+}
+```
+
+Moved 'MinimalWindowManager::advise_new_window' before the focus request and done.

@@ -105,9 +105,9 @@ void TiledWindowManager::advise_new_window(WindowInfo const& window_info)
         current_workspace = new_workspace;
     }
 
-    tools.add_tree_to_workspace(window_info.window(), current_workspace);
-
     MinimalWindowManager::advise_new_window(window_info);
+    
+    tools.add_tree_to_workspace(window_info.window(), current_workspace);
 }
 
 void TiledWindowManager::advise_adding_to_workspace(
@@ -315,6 +315,8 @@ void TiledWindowManager::update_windows(
 
             ++window_index;
         });
+    
+    tools.select_active_window(get_workspace_windows(workspaces.at(this->current_workspace_index))[0]);
 
     ++i;
     for (; i < this->workspaces.size(); ++i)
