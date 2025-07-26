@@ -132,25 +132,26 @@ what I wanted to implement, logic to interact with the workspaces using keybinds
 
 ## Testing
 
-As the last step, while testing creating windows and moving them between workspaces, I noticed that, when moving to a 
-workspace where there is a gnome-calculator window, the focus was being moved to a window in the previous workspace, which was not the expected behavior. 
+As the last step, while testing the creation of windows and moving them between workspaces, I noticed that, when moving to a
+workspace where there is a gnome-calculator window, the focus was being moved to a window in the previous workspace, which was not the expected behavior.
 
-My first thought was to change the focus to the first window when the method 'update_windows' was called but it did not work as 
+My first thought was to change the focus to the first window when the method 'update_windows' was called but it did not work as
 expected. The compositor started crashing on startup. The error was the following:
 
 ```bash
 Mir fatal error: advise_focus_gained: window was not found in the list!!!
 ```
 
-Decided to override the method 'advise_focus_gained' and it started working as expected. To see what was going on, I decided to read the 
-source code and understand what was MinimalWindowManager doing. At this point, I started thinking that using MinimalWindowManager instead 
-of WindowManagerPolicy wasn't the best approach, but, at the same time, I wanted the functionality already implemented in MinimalWindowManager.
+I decided to override the method 'advise_focus_gained' and it started working as expected. To see what was going on, I decided to read the
+source code and understand what MinimalWindowManager was doing. At this point, I started thinking that using MinimalWindowManager instead
+of WindowManagerPolicy might not be the best approach, but, at the same time, I wanted the functionality already implemented in
+MinimalWindowManager.
 
-Diving into the source code, I found that 'ApplicationSelector::advise_focus_gained' was raising a fatal error because, the window I was 
+Diving into the source code, I found that 'ApplicationSelector::advise_focus_gained' was raising a fatal error because the window I was
 trying to focus was not found in a list called 'focus_list'. Elements were being added to the list when
-'ApplicationSelector::advise_new_window' was being called. MinimalWindowManager calls 'ApplicationSelector::advise_new_window' when 
+'ApplicationSelector::advise_new_window' was being called. MinimalWindowManager calls 'ApplicationSelector::advise_new_window' when
 'MinimalWindowManager::advise_new_window' gets called so maybe I wasn't calling 'MinimalWindowManager::advise_new_window' after
-overriding the method. Went to my code and found that I was calling it but after the focus request.
+overriding the method. I went to my code and found that I was calling it, but after the focus request.
 
 ```cpp
 void TiledWindowManager::advise_new_window(WindowInfo const& window_info)
@@ -172,4 +173,14 @@ void TiledWindowManager::advise_new_window(WindowInfo const& window_info)
 }
 ```
 
-Moved 'MinimalWindowManager::advise_new_window' before the focus request and done.
+I moved 'MinimalWindowManager::advise_new_window' before the focus request, and that solved the issue.
+
+## Last keybinding
+
+I noticed that I didn't have a keybinding to close a window, something mandatory if I want a window manager to work as expected without
+a mouse. At the same time, I also found that I wasn't removing the workspaces when empty, which caused the app to crash when updating the
+windows because there was no first window to focus. I added a check to ensure there is at least one window in the workspace before trying
+to focus it. I also added logic to remove the workspace when empty inside 'advise_removing_from_workspace' instead of
+the logic previously implemented when using Ctrl + Alt + V.
+
+- Ctrl + Alt + C: Close the focused window
