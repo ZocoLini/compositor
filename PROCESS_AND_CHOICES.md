@@ -2,7 +2,7 @@
 
 ## Official Mir documentation
 
-The process began by consulting the official Mir documentation to identify a ‘getting started’ guide, tutorialS, and examples.
+The process began by consulting the official Mir documentation to identify a ‘getting started’ guide, tutorials, and examples.
 
 ## Creating the project and setting up the environment
 
@@ -12,7 +12,7 @@ a new project directory and setting up the environment.
 - Created a basic project structure with include, src and test folders.
 - CMakeLists.txt files created.
 - Configured the code editor and C++ tools for development.
-- Init a git repository.
+- Initialized a git repository.
 - Created a main.cpp file with the example code from the official tutorial and tested that it works.
 
 ## Basic functionality
@@ -101,7 +101,7 @@ Now we have a usable Window Manager but with one issue, we cannot place more tha
 ## Workspaces
 
 Having a limit of four windows isn't ideal. To overcome this limitation, I can introduce the concept of workspaces which
-I already saw in the Mir API. Each workspace can hold up to four windows and, each time a fifth window is added, it will be placed
+I already saw in the Mir's API. Each workspace can hold up to four windows and, each time a fifth window is added, it will be placed
 in the next workspace.
 
 The first step is to track the created workspaces and the active one.
@@ -127,7 +127,7 @@ what I wanted to implement, logic to interact with the workspaces using keybinds
 - Ctrl + Alt + Q: Move to previous workspace
 - Ctrl + Alt + E: Move to next workspace
 - Ctrl + Alt + M: Move the active window to a new workspace
-- Ctrl + Alt + V: Close all windows in the actual workspace, remove it, and move to the previous one
+- Ctrl + Alt + V: Close all windows in the current workspace, remove it, and move to the previous one
 - Ctrl + Alt + Tab: Switch the focus between windows in the current workspace
 
 ## Testing
@@ -177,10 +177,16 @@ I moved 'MinimalWindowManager::advise_new_window' before the focus request, and 
 
 ## Last keybinding
 
-I noticed that I didn't have a keybinding to close a window, something mandatory if I want a window manager to work as expected without
+I noticed that I didn't have a keybinding to close a window, something mandatory if I want a compositor to work as expected without
 a mouse. At the same time, I also found that I wasn't removing the workspaces when empty, which caused the app to crash when updating the
 windows because there was no first window to focus. I added a check to ensure there is at least one window in the workspace before trying
 to focus it. I also added logic to remove the workspace when empty inside 'advise_removing_from_workspace' instead of
 the logic previously implemented when using Ctrl + Alt + V.
 
 - Ctrl + Alt + C: Close the focused window
+
+## Last review
+
+To finish the development of the compositor I refactored and cleaned up the code, solved some bugs that I found, and adjusted the
+formatting. Although it took more than 4 hours to complete, a significant portion of the time was spent experimenting, reading the API,
+and understanding the ecosystem.

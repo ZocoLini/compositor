@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-using namespace miral;
 using namespace miral::toolkit;
 
 int main(int argc, char const* argv[])

@@ -6,7 +6,6 @@
 #include "miral/window_manager_tools.h"
 #include <miral/minimal_window_manager.h>
 
-using namespace ::miral;
 
 class TiledWindowManager : public miral::MinimalWindowManager
 {

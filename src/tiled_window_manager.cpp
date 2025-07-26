@@ -132,6 +132,8 @@ void TiledWindowManager::advise_removing_from_workspace(
         if (this->current_workspace_index == this->workspaces.size())
         {
             --this->current_workspace_index;
+            update_windows({});
+            return;
         }
     }
 
@@ -168,18 +170,6 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
     MirInputEventModifiers mods = mir_keyboard_event_modifiers(event);
     if (!(mods & mir_input_event_modifier_alt) || !(mods & mir_input_event_modifier_ctrl))
         return false;
-
-    if (mir_keyboard_event_keysym(event) == XKB_KEY_q ||
-        mir_keyboard_event_keysym(event) == XKB_KEY_e)
-    {
-        this->current_workspace_index =
-            (this->current_workspace_index +
-             (mir_keyboard_event_keysym(event) == XKB_KEY_q ? this->workspaces.size() - 1 : 1)) %
-            this->workspaces.size();
-        std::cout << "Swap workspace event received" << std::endl;
-        update_windows({});
-        return true;
-    }
 
     auto current_workspace = get_current_workspace();
     auto active_window = tools.active_window();
@@ -243,12 +233,11 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
                                                       ? this->workspaces.size() - 1
                                                       : 1)) %
                 this->workspaces.size();
-            std::cout << "Swap workspace event received" << std::endl;
             update_windows({});
             return true;
-        default:
-            return MinimalWindowManager::handle_keyboard_event(event);
     }
+
+    return false;
 }
 
 void TiledWindowManager::update_windows(std::vector<Window> const& ignorable_windows)
@@ -276,12 +265,10 @@ void TiledWindowManager::update_windows(std::vector<Window> const& ignorable_win
     std::vector<miral::Window> windows = get_workspace_windows(get_current_workspace());
     miral::Window* first_valid_window = NULL;
 
-    for (int j = 0; j < windows.size(); ++j)
+    for (auto window : windows)
     {
-        miral::Window window = windows[j];
-
         auto it = std::find(ignorable_windows.begin(), ignorable_windows.end(), window);
-        if (it != ignorable_windows.end()) return;
+        if (it != ignorable_windows.end()) continue;
 
         if (first_valid_window == NULL) first_valid_window = &window;
 
