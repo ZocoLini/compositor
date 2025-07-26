@@ -14,7 +14,7 @@ using namespace miral::toolkit;
 
 int main(int argc, char const* argv[])
 {
-    MirRunner runner{argc, argv};
+    miral::MirRunner runner{argc, argv};
 
     std::string terminal_cmd{"xfce4-terminal"};
     miral::ExternalClientLauncher launcher;
@@ -22,24 +22,19 @@ int main(int argc, char const* argv[])
     auto const open_terminal_keybinds = [&](MirEvent const* event)
     {
         // Skip non-input events
-        if (mir_event_get_type(event) != mir_event_type_input)
-            return false;
+        if (mir_event_get_type(event) != mir_event_type_input) return false;
 
         // Skip non-key input events
         MirInputEvent const* input_event = mir_event_get_input_event(event);
-        if (mir_input_event_get_type(input_event) != mir_input_event_type_key)
-            return false;
+        if (mir_input_event_get_type(input_event) != mir_input_event_type_key) return false;
 
         // Skip anything but down presses
-        MirKeyboardEvent const* kev =
-            mir_input_event_get_keyboard_event(input_event);
-        if (mir_keyboard_event_action(kev) != mir_keyboard_action_down)
-            return false;
+        MirKeyboardEvent const* kev = mir_input_event_get_keyboard_event(input_event);
+        if (mir_keyboard_event_action(kev) != mir_keyboard_action_down) return false;
 
         // CTRL  ALT must be pressed
         MirInputEventModifiers mods = mir_keyboard_event_modifiers(kev);
-        if (!(mods & mir_input_event_modifier_alt) ||
-            !(mods & mir_input_event_modifier_ctrl))
+        if (!(mods & mir_input_event_modifier_alt) || !(mods & mir_input_event_modifier_ctrl))
             return false;
 
         switch (mir_keyboard_event_keysym(kev))
@@ -65,7 +60,7 @@ int main(int argc, char const* argv[])
     };
 
     return runner.run_with({
-        set_window_management_policy<TiledWindowManager>(),
+        miral::set_window_management_policy<TiledWindowManager>(),
         launcher,
         miral::ConfigurationOption{
             run_startup_apps, "startup-app",
