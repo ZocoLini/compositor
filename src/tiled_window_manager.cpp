@@ -33,8 +33,7 @@ mir::geometry::Point position_for(int index, int width, int height)
 
     std::tuple<float, float> position = positions[index];
 
-    return mir::geometry::Point{std::get<0>(position) * width,
-                                std::get<1>(position) * height};
+    return mir::geometry::Point{std::get<0>(position) * width, std::get<1>(position) * height};
 }
 
 mir::geometry::Size size_for(int index, int total, int width, int height)
@@ -59,8 +58,7 @@ mir::geometry::Size size_for(int index, int total, int width, int height)
 
     std::tuple<float, float> size = sizes[start_index[total - 1] + index];
 
-    return mir::geometry::Size{std::get<0>(size) * width,
-                               std::get<1>(size) * height};
+    return mir::geometry::Size{std::get<0>(size) * width, std::get<1>(size) * height};
 }
 
 TiledWindowManager::TiledWindowManager(const WindowManagerTools& tools)
@@ -76,8 +74,7 @@ TiledWindowManager::~TiledWindowManager()
     for (auto workspace : this->workspaces)
     {
         tools.for_each_window_in_workspace(
-            workspace,
-            [&](const Window& window) { tools.ask_client_to_close(window); });
+            workspace, [&](const Window& window) { tools.ask_client_to_close(window); });
     }
 
     this->workspaces.clear();
@@ -94,7 +91,7 @@ miral::WindowSpecification TiledWindowManager::place_new_window(
 
 void TiledWindowManager::advise_new_window(WindowInfo const& window_info)
 {
-    auto current_workspace = this->workspaces.at(this->current_workspace_index);
+    auto current_workspace = get_current_workspace();
     int windows_count = count_windows_in_workspace(current_workspace);
 
     if (windows_count >= kMaxWindows)
@@ -111,25 +108,21 @@ void TiledWindowManager::advise_new_window(WindowInfo const& window_info)
 }
 
 void TiledWindowManager::advise_adding_to_workspace(
-    std::shared_ptr<Workspace> const& workspace,
-    std::vector<Window> const& windows)
+    std::shared_ptr<Workspace> const& workspace, std::vector<Window> const& windows)
 {
     std::cout << "Adding windows to workspace" << std::endl;
     std::cout << "Added windows count: " << windows.size() << std::endl;
-    std::cout << "Windows count: " << count_windows_in_workspace(workspace)
-              << std::endl;
+    std::cout << "Windows count: " << count_windows_in_workspace(workspace) << std::endl;
 
     update_windows({});
 }
 
 void TiledWindowManager::advise_removing_from_workspace(
-    std::shared_ptr<Workspace> const& workspace,
-    std::vector<Window> const& windows)
+    std::shared_ptr<Workspace> const& workspace, std::vector<Window> const& windows)
 {
     std::cout << "Removing windows from workspace" << std::endl;
     std::cout << "Deleted windows count: " << windows.size() << std::endl;
-    std::cout << "Windows count: " << count_windows_in_workspace(workspace)
-              << std::endl;
+    std::cout << "Windows count: " << count_windows_in_workspace(workspace) << std::endl;
 
     if (this->workspaces.size() != 1 &&
         (get_workspace_windows(workspace).size() - windows.size()) == 0)
@@ -145,14 +138,13 @@ void TiledWindowManager::advise_removing_from_workspace(
     update_windows(windows);
 }
 
-void TiledWindowManager::handle_request_resize(miral::WindowInfo& window_info,
-                                               MirInputEvent const* input_event,
-                                               MirResizeEdge edge)
+void TiledWindowManager::handle_request_resize(
+    miral::WindowInfo& window_info, MirInputEvent const* input_event, MirResizeEdge edge)
 {
 }
 
-void TiledWindowManager::handle_request_move(WindowInfo& window_info,
-                                             MirInputEvent const* input_event)
+void TiledWindowManager::handle_request_move(
+    WindowInfo& window_info, MirInputEvent const* input_event)
 {
 }
 
@@ -169,19 +161,12 @@ void TiledWindowManager::handle_modify_window(
     MinimalWindowManager::handle_modify_window(window_info, modifications);
 }
 
-void TiledWindowManager::advise_delete_window(WindowInfo const& window_info)
-{
-    miral::MinimalWindowManager::advise_delete_window(window_info);
-}
-
 bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
 {
-    if (mir_keyboard_event_action(event) != mir_keyboard_action_down)
-        return false;
+    if (mir_keyboard_event_action(event) != mir_keyboard_action_down) return false;
 
     MirInputEventModifiers mods = mir_keyboard_event_modifiers(event);
-    if (!(mods & mir_input_event_modifier_alt) ||
-        !(mods & mir_input_event_modifier_ctrl))
+    if (!(mods & mir_input_event_modifier_alt) || !(mods & mir_input_event_modifier_ctrl))
         return false;
 
     if (mir_keyboard_event_keysym(event) == XKB_KEY_q ||
@@ -189,16 +174,14 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
     {
         this->current_workspace_index =
             (this->current_workspace_index +
-             (mir_keyboard_event_keysym(event) == XKB_KEY_q
-                  ? this->workspaces.size() - 1
-                  : 1)) %
+             (mir_keyboard_event_keysym(event) == XKB_KEY_q ? this->workspaces.size() - 1 : 1)) %
             this->workspaces.size();
         std::cout << "Swap workspace event received" << std::endl;
         update_windows({});
         return true;
     }
 
-    auto current_workspace = this->workspaces.at(this->current_workspace_index);
+    auto current_workspace = get_current_workspace();
     auto active_window = tools.active_window();
     std::shared_ptr<miral::Workspace> new_workspace;
 
@@ -207,8 +190,8 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
         case XKB_KEY_V:
         case XKB_KEY_v:
             tools.for_each_window_in_workspace(
-                current_workspace, [&](const Window& window)
-                { tools.ask_client_to_close(window); });
+                current_workspace,
+                [&](const Window& window) { tools.ask_client_to_close(window); });
             return true;
         case XKB_KEY_C:
         case XKB_KEY_c:
@@ -216,8 +199,7 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
             return true;
         case XKB_KEY_Tab:
         {
-            std::vector<miral::Window> windows =
-                get_workspace_windows(current_workspace);
+            std::vector<miral::Window> windows = get_workspace_windows(current_workspace);
 
             int active_window_index = -1;
             for (size_t i = 0; i < windows.size(); ++i)
@@ -244,8 +226,7 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
         }
         case XKB_KEY_m:
         case XKB_KEY_M:
-            if (count_windows_in_workspace(current_workspace) == 1)
-                return false;
+            if (count_windows_in_workspace(current_workspace) == 1) return false;
             tools.remove_tree_from_workspace(active_window, current_workspace);
 
             new_workspace = tools.create_workspace();
@@ -258,10 +239,9 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
         case XKB_KEY_q:
         case XKB_KEY_e:
             this->current_workspace_index =
-                (this->current_workspace_index +
-                 (mir_keyboard_event_keysym(event) == XKB_KEY_q
-                      ? this->workspaces.size() - 1
-                      : 1)) %
+                (this->current_workspace_index + (mir_keyboard_event_keysym(event) == XKB_KEY_q
+                                                      ? this->workspaces.size() - 1
+                                                      : 1)) %
                 this->workspaces.size();
             std::cout << "Swap workspace event received" << std::endl;
             update_windows({});
@@ -271,8 +251,7 @@ bool TiledWindowManager::handle_keyboard_event(MirKeyboardEvent const* event)
     }
 }
 
-void TiledWindowManager::update_windows(
-    std::vector<Window> const& ignorable_windows)
+void TiledWindowManager::update_windows(std::vector<Window> const& ignorable_windows)
 {
     std::cout << "Updating windows..." << std::endl;
 
@@ -283,52 +262,48 @@ void TiledWindowManager::update_windows(
     for (; i < this->current_workspace_index; ++i)
     {
         auto workspace = workspaces.at(i);
-        tools.for_each_window_in_workspace(workspace, [&](const Window& window)
-                                           { hide_window(window); });
+        tools.for_each_window_in_workspace(
+            workspace, [&](const Window& window) { hide_window(window); });
     }
 
-    std::cout << "Showing workspace " << this->current_workspace_index
-              << std::endl;
+    std::cout << "Showing workspace " << this->current_workspace_index << std::endl;
 
-    int windows_count = count_windows_in_workspace(
-                            workspaces.at(this->current_workspace_index)) -
-                        ignorable_windows.size();
+    int windows_count =
+        count_windows_in_workspace(get_current_workspace()) - ignorable_windows.size();
 
     int window_index = 0;
-    tools.for_each_window_in_workspace(
-        workspaces.at(this->current_workspace_index),
-        [&](const Window& window)
-        {
-            miral::Window _window = window;
 
-            auto it = std::find(ignorable_windows.begin(),
-                                ignorable_windows.end(), window);
-            if (it != ignorable_windows.end())
-                return;
+    std::vector<miral::Window> windows = get_workspace_windows(get_current_workspace());
+    miral::Window* first_valid_window = NULL;
 
-            show_window(window);
-
-            _window.resize(
-                size_for(window_index, windows_count, width, height));
-            _window.move_to(position_for(window_index, width, height));
-
-            ++window_index;
-        });
-
-    std::vector<miral::Window> windows =
-        get_workspace_windows(workspaces.at(this->current_workspace_index));
-
-    if (!windows.empty())
+    for (int j = 0; j < windows.size(); ++j)
     {
-        tools.select_active_window(windows[0]);
+        miral::Window window = windows[j];
+
+        auto it = std::find(ignorable_windows.begin(), ignorable_windows.end(), window);
+        if (it != ignorable_windows.end()) return;
+
+        if (first_valid_window == NULL) first_valid_window = &window;
+
+        show_window(window);
+
+        window.resize(size_for(window_index, windows_count, width, height));
+        window.move_to(position_for(window_index, width, height));
+
+        ++window_index;
+    }
+
+    if (first_valid_window != NULL)
+    {
+        tools.select_active_window(*first_valid_window);
     }
 
     ++i;
     for (; i < this->workspaces.size(); ++i)
     {
         auto workspace = workspaces.at(i);
-        tools.for_each_window_in_workspace(workspace, [&](const Window& window)
-                                           { hide_window(window); });
+        tools.for_each_window_in_workspace(
+            workspace, [&](const Window& window) { hide_window(window); });
     }
 }
 
@@ -352,18 +327,22 @@ int TiledWindowManager::count_windows_in_workspace(
     std::shared_ptr<miral::Workspace> const& workspace)
 {
     int count = 0;
-    tools.for_each_window_in_workspace(workspace,
-                                       [&](const Window& window) { ++count; });
+    tools.for_each_window_in_workspace(workspace, [&](const Window& window) { ++count; });
     return count;
 }
 
-std::vector<miral::Window> TiledWindowManager::get_workspace_windows(
-    std::shared_ptr<miral::Workspace> const& workspace)
+std::vector<miral::Window>
+TiledWindowManager::get_workspace_windows(std::shared_ptr<miral::Workspace> const& workspace)
 {
     int windows_count = count_windows_in_workspace(workspace);
     std::vector<miral::Window> windows;
     windows.reserve(windows_count);
-    tools.for_each_window_in_workspace(workspace, [&](const Window& window)
-                                       { windows.push_back(window); });
+    tools.for_each_window_in_workspace(
+        workspace, [&](const Window& window) { windows.push_back(window); });
     return windows;
+}
+
+std::shared_ptr<miral::Workspace> TiledWindowManager::get_current_workspace()
+{
+    return workspaces.at(this->current_workspace_index);
 }

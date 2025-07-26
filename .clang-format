@@ -7,4 +7,10 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 BreakBeforeBraces: Allman
 IndentCaseLabels: true
+AllowShortIfStatementsOnASingleLine: true
+ColumnLimit: 100
+BinPackParameters: false
+ContinuationIndentWidth: 4
+AllowAllArgumentsOnNextLine: false
+AlignAfterOpenBracket: AlwaysBreak
 ---
